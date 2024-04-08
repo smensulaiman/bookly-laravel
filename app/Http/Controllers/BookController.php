@@ -14,11 +14,11 @@ class BookController extends Controller
     {
         $title = $request->input('title');
 
-        $book = Book::when($title, function ($query, $title){
+        $books = Book::when($title, function ($query, $title) {
             return $query->title($title);
-        })->get();
+        })->withAvg('reviews', 'rating')->withCount('reviews')->get();
 
-        return view('books.index');
+        return view('books.index', array('books' => $books));
     }
 
     /**
