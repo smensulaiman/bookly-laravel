@@ -51,6 +51,13 @@ class Book extends Model
         return $queryBuilder->where('title', 'LIKE', "%$title%");
     }
 
+    /**
+     * @param Builder $queryBuilder
+     * @param $from
+     * @param $to
+     * @return Builder
+     * @method withReviewsCount()
+     */
     public function scopeWithReviewsCount(Builder $queryBuilder, $from = null, $to = null): Builder
     {
         return $queryBuilder->withCount(array(
@@ -106,7 +113,6 @@ class Book extends Model
             ->highestRated(now()->subMonth(), now())
             ->minReviews(2);
     }
-
 
     public function scopePopularLastSixMonths(Builder $queryBuilder): Builder
     {
