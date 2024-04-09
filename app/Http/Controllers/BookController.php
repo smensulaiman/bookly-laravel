@@ -14,15 +14,25 @@ class BookController extends Controller
     public function index(Request $request): View
     {
         $title = $request->input('title');
+        $filter = $request->input('filter', '');
 
         $books = Book::when($title, function ($query, $title) {
             return $query->title($title);
         })->withAvg('reviews', 'rating')
             ->withCount('reviews')
-            ->orderBy('updated_at', 'desc')
-            ->get();
+            ->orderBy('updated_at', 'desc');
 
-        return View('books.index', array('books' => $books));
+        $books = match ($filter) {
+            'popular_last_month' => $books->popularLastMonth(),
+            'popular_last_six_months' => $books->popularLastSixMonths(),
+            'highest_rated_last_month' => $books->highestRatedLastMonth(),
+            'highest_rated_last_six_months' => $books->highestRatedLastSixMonths(),
+            default => $books->latest()
+        };
+
+        $books = $books->get();
+
+        return view('books.index', array('books' => $books));
     }
 
     /**
@@ -46,7 +56,10 @@ class BookController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $book = Book::with(array(
+            'reviews' => fn($query) => $query->latest()
+        ))->withReviewsCount()->withReviewsAverageRating()->findOrFail($id);
+        return view('books.book', array('book' => $book));
     }
 
     /**
