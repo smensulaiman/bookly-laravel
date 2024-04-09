@@ -35,6 +35,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static Builder|Book wherePublishedAt($value)
  * @method static Builder|Book whereTitle($value)
  * @method static Builder|Book whereUpdatedAt($value)
+ * @method Builder popularLastMonth()
  * @mixin \Eloquent
  */
 class Book extends Model
@@ -51,13 +52,6 @@ class Book extends Model
         return $queryBuilder->where('title', 'LIKE', "%$title%");
     }
 
-    /**
-     * @param Builder $queryBuilder
-     * @param $from
-     * @param $to
-     * @return Builder
-     * @method withReviewsCount()
-     */
     public function scopeWithReviewsCount(Builder $queryBuilder, $from = null, $to = null): Builder
     {
         return $queryBuilder->withCount(array(
@@ -133,6 +127,13 @@ class Book extends Model
         return $queryBuilder->highestRated(now()->subMonths(6), now())
             ->popular(now()->subMonths(6), now())
             ->minReviews(2);
+    }
+
+    protected static function booted()
+    {
+        static::updated(function (Book $book){
+            cache()->forget('books::');
+        });
     }
 
 }

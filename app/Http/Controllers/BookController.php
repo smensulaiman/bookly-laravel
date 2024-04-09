@@ -62,6 +62,12 @@ class BookController extends Controller
         $book = Book::with(array(
             'reviews' => fn($query) => $query->latest()
         ))->withReviewsCount()->withReviewsAverageRating()->findOrFail($id);
+
+        $cacheKey = 'book:' . $id;
+        $book = cache()->remember($cacheKey, 3600, function () use ($id, $book){
+            return $book;
+        });
+
         return view('books.book', array('book' => $book));
     }
 
