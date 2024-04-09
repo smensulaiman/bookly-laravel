@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Book;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 
 class BookController extends Controller
@@ -10,15 +11,18 @@ class BookController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $title = $request->input('title');
 
         $books = Book::when($title, function ($query, $title) {
             return $query->title($title);
-        })->withAvg('reviews', 'rating')->withCount('reviews')->get();
+        })->withAvg('reviews', 'rating')
+            ->withCount('reviews')
+            ->orderBy('updated_at', 'desc')
+            ->get();
 
-        return view('books.index', array('books' => $books));
+        return View('books.index', array('books' => $books));
     }
 
     /**
